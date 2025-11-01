@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Samarth - Intelligent Q&A System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-green-50 to-yellow-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center gap-3">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                    </svg>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Project Samarth</h1>
+                        <p class="text-sm text-gray-600">Intelligent Q&A over Agricultural & Climate Data</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="showTab('chat')" id="chatBtn" class="px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white">
+                        Chat Interface
+                    </button>
+                    <button onclick="showTab('architecture')" id="archBtn" class="px-4 py-2 rounded-lg font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200">
+                        System Architecture
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Chat Interface Tab -->
+        <div id="chatTab" class="space-y-6">
+            <!-- Query Input -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Ask a Question
+                </label>
+                <div class="flex gap-2 flex-wrap sm:flex-nowrap">
+                    <input
+                        type="text"
+                        id="queryInput"
+                        placeholder="e.g., Compare rainfall in Karnataka and Punjab..."
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0"
+                        onkeypress="handleKeyPress(event)"
+                    />
+                    <button
+                        onclick="handleQuery()"
+                        id="queryBtn"
+                        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        Query
+                    </button>
+                </div>
+                
+                <!-- Sample Questions -->
+                <div class="mt-4">
+                    <p class="text-xs font-medium text-gray-600 mb-2">Sample Questions:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="setQuery('Compare average rainfall in Karnataka and Punjab for last 3 years')" class="text-xs px-3 py-1 bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors">
+                            Compare average rainfall in Karnataka and Punjab for last 3 years
+                        </button>
+                        <button onclick="setQuery('What are the top 3 crops in Maharashtra by production volume?')" class="text-xs px-3 py-1 bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors">
+                            What are the top 3 crops in Maharashtra by production volume?
+                        </button>
+                        <button onclick="setQuery('Analyze cotton production trend in Karnataka over the last 3 years')" class="text-xs px-3 py-1 bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors">
+                            Analyze cotton production trend in Karnataka over the last 3 years
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="hidden bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center gap-3">
+                    <svg class="w-6 h-6 text-blue-600 spinner" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <span class="text-gray-700">Processing query and fetching data from multiple sources...</span>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="resultsContainer" class="hidden bg-white rounded-xl shadow-lg p-6 fade-in">
+                <!-- Results will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Architecture Tab -->
+        <div id="architectureTab" class="hidden space-y-6">
+            <!-- System Overview -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">System Architecture</h2>
+                <p class="text-gray-600 mb-6">
+                    Project Samarth uses a multi-layered architecture to query, integrate, and synthesize data from heterogeneous government sources.
+                </p>
+
+                <!-- Architecture Diagram -->
+                <div class="space-y-4">
+                    <div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+                        <h3 class="font-bold text-blue-900 mb-2">1. Query Understanding Layer</h3>
+                        <p class="text-sm text-gray-700">NLP-based intent classification, entity extraction (states, crops, years), and query decomposition</p>
+                    </div>
+
+                    <div class="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+                        <h3 class="font-bold text-green-900 mb-2">2. Data Source Manager</h3>
+                        <p class="text-sm text-gray-700">API connectors for data.gov.in, schema mappers for different datasets, caching layer for performance</p>
+                    </div>
+
+                    <div class="border-2 border-yellow-200 rounded-lg p-4 bg-yellow-50">
+                        <h3 class="font-bold text-yellow-900 mb-2">3. Data Integration Engine</h3>
+                        <p class="text-sm text-gray-700">Normalizes different data formats, resolves entity mismatches (state names, crop codes), temporal alignment</p>
+                    </div>
+
+                    <div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">
+                        <h3 class="font-bold text-purple-900 mb-2">4. Analysis & Synthesis</h3>
+                        <p class="text-sm text-gray-700">Statistical computations, correlation analysis, trend detection, natural language generation</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Features -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="font-bold text-lg mb-4">Data Sources</h3>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>Ministry of Agriculture: District-wise crop production data via API</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>IMD: Rainfall statistics and meteorological data</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>Directorate of Economics & Statistics: Area and yield data</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="font-bold text-lg mb-4">Technical Implementation</h3>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>HTML/JavaScript frontend with natural language query interface</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>Python backend with FastAPI for data processing</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>Redis caching to minimize API calls to data.gov.in</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Challenges & Solutions -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="font-bold text-lg mb-4">Key Challenges & Solutions</h3>
+                <div class="space-y-4">
+                    <div class="border-l-4 border-red-400 pl-4">
+                        <p class="font-semibold text-red-900">Challenge: Inconsistent Data Schemas</p>
+                        <p class="text-sm text-gray-700 mt-1">Different ministries use different crop codes, state name variations, and temporal granularities</p>
+                        <p class="text-sm text-green-700 mt-2"><strong>Solution:</strong> Canonical mapping tables and fuzzy matching algorithms</p>
+                    </div>
+
+                    <div class="border-l-4 border-orange-400 pl-4">
+                        <p class="font-semibold text-orange-900">Challenge: Rate Limits & Data Freshness</p>
+                        <p class="text-sm text-gray-700 mt-1">data.gov.in APIs have rate limits and data updates are irregular</p>
+                        <p class="text-sm text-green-700 mt-2"><strong>Solution:</strong> Intelligent caching with TTL based on dataset update frequency</p>
+                    </div>
+
+                    <div class="border-l-4 border-yellow-400 pl-4">
+                        <p class="font-semibold text-yellow-900">Challenge: Complex Multi-Source Queries</p>
+                        <p class="text-sm text-gray-700 mt-1">Answering questions requires joining data from multiple APIs with different structures</p>
+                        <p class="text-sm text-green-700 mt-2"><strong>Solution:</strong> Query planner that decomposes questions into sub-queries and orchestrates data fetching</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Mock data
+        const MOCK_CROP_DATA = {
+            "Karnataka": {
+                "2020": { "Rice": 4200000, "Wheat": 150000, "Sugarcane": 3800000, "Cotton": 520000 },
+                "2021": { "Rice": 4350000, "Wheat": 160000, "Sugarcane": 3950000, "Cotton": 540000 },
+                "2022": { "Rice": 4100000, "Wheat": 155000, "Sugarcane": 3700000, "Cotton": 510000 }
+            },
+            "Punjab": {
+                "2020": { "Rice": 11200000, "Wheat": 17500000, "Sugarcane": 680000, "Cotton": 1150000 },
+                "2021": { "Rice": 11500000, "Wheat": 18000000, "Sugarcane": 700000, "Cotton": 1200000 },
+                "2022": { "Rice": 11300000, "Wheat": 17800000, "Sugarcane": 690000, "Cotton": 1180000 }
+            },
+            "Maharashtra": {
+                "2020": { "Rice": 2800000, "Wheat": 1400000, "Sugarcane": 82000000, "Cotton": 5200000 },
+                "2021": { "Rice": 2900000, "Wheat": 1450000, "Sugarcane": 84000000, "Cotton": 5400000 },
+                "2022": { "Rice": 2750000, "Wheat": 1420000, "Sugarcane": 80000000, "Cotton": 5100000 }
+            }
+        };
+
+        const MOCK_RAINFALL_DATA = {
+            "Karnataka": { "2020": 820, "2021": 890, "2022": 760 },
+            "Punjab": { "2020": 620, "2021": 580, "2022": 650 },
+            "Maharashtra": { "2020": 1150, "2021": 1200, "2022": 980 }
+        };
+
+        // Tab management
+        function showTab(tab) {
+            const chatTab = document.getElementById('chatTab');
+            const archTab = document.getElementById('architectureTab');
+            const chatBtn = document.getElementById('chatBtn');
+            const archBtn = document.getElementById('archBtn');
+
+            if (tab === 'chat') {
+                chatTab.classList.remove('hidden');
+                archTab.classList.add('hidden');
+                chatBtn.classList.add('bg-blue-600', 'text-white');
+                chatBtn.classList.remove('bg-gray-100', 'text-gray-700');
+                archBtn.classList.remove('bg-blue-600', 'text-white');
+                archBtn.classList.add('bg-gray-100', 'text-gray-700');
+            } else {
+                chatTab.classList.add('hidden');
+                archTab.classList.remove('hidden');
+                archBtn.classList.add('bg-blue-600', 'text-white');
+                archBtn.classList.remove('bg-gray-100', 'text-gray-700');
+                chatBtn.classList.remove('bg-blue-600', 'text-white');
+                chatBtn.classList.add('bg-gray-100', 'text-gray-700');
+            }
+        }
+
+        // Query handling
+        function setQuery(query) {
+            document.getElementById('queryInput').value = query;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                handleQuery();
+            }
+        }
+
+        async function handleQuery() {
+            const input = document.getElementById('queryInput');
+            const query = input.value.trim();
+            
+            if (!query) return;
+
+            const btn = document.getElementById('queryBtn');
+            const loading = document.getElementById('loadingIndicator');
+            const results = document.getElementById('resultsContainer');
+
+            // Show loading
+            btn.disabled = true;
+            loading.classList.remove('hidden');
+            results.classList.add('hidden');
+
+            // Simulate API processing
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            // Analyze and process query
+            const analysis = analyzeQuery(query);
+            let result;
+
+            switch (analysis.type) {
+                case 'rainfall_comparison':
+                    result = processRainfallComparison(analysis.states, analysis.years);
+                    break;
+                case 'top_crops':
+                    result = processTopCrops(analysis.state, analysis.year);
+                    break;
+                case 'production_trend':
+                    result = processProductionTrend(analysis.crop, analysis.state, analysis.years);
+                    break;
+                default:
+                    result = {
+                        title: 'Query Not Recognized',
+                        summary: 'Please try rephrasing your question or use one of the sample questions.',
+                        data: null
+                    };
+            }
+
+            // Display results
+            displayResults(result);
+
+            // Hide loading
+            loading.classList.add('hidden');
+            results.classList.remove('hidden');
+            btn.disabled = false;
+        }
+
+        function analyzeQuery(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            // Rainfall comparison
+            if (lowerQuery.includes('rainfall') && lowerQuery.includes('compare')) {
+                const states = Object.keys(MOCK_RAINFALL_DATA);
+                const mentionedStates = states.filter(state => 
+                    lowerQuery.includes(state.toLowerCase())
+                );
+                
+                if (mentionedStates.length >= 2) {
+                    return {
+                        type: 'rainfall_comparison',
+                        states: mentionedStates,
+                        years: ['2020', '2021', '2022']
+                    };
+                }
+            }
+            
+            // Top crops
+            if (lowerQuery.includes('top') && (lowerQuery.includes('crop') || lowerQuery.includes('produce'))) {
+                const states = Object.keys(MOCK_CROP_DATA);
+                const mentionedState = states.find(state => 
+                    lowerQuery.includes(state.toLowerCase())
+                );
+                
+                if (mentionedState) {
+                    return {
+                        type: 'top_crops',
+                        state: mentionedState,
+                        year: '2022'
+                    };
+                }
+            }
+            
+            // Production trend
+            if (lowerQuery.includes('trend') || lowerQuery.includes('analyze')) {
+                const crops = ['rice', 'wheat', 'sugarcane', 'cotton'];
+                const states = Object.keys(MOCK_CROP_DATA);
+                
+                const mentionedCrop = crops.find(crop => lowerQuery.includes(crop));
+                const mentionedState = states.find(state => 
+                    lowerQuery.includes(state.toLowerCase())
+                );
+                
+                if (mentionedCrop && mentionedState) {
+                    return {
+                        type: 'production_trend',
+                        crop: mentionedCrop.charAt(0).toUpperCase() + mentionedCrop.slice(1),
+                        state: mentionedState,
+                        years: ['2020', '2021', '2022']
+                    };
+                }
+            }
+            
+            return { type: 'unknown' };
+        }
+
+        function processRainfallComparison(states, years) {
+            const data = states.map(state => {
+                const rainfall = years.map(year => MOCK_RAINFALL_DATA[state][year]);
+                const avg = Math.round(rainfall.reduce((a, b) => a + b, 0) / rainfall.length);
+                return { state, rainfall, avg };
+            });
+            
+            return {
+                title: `Rainfall Comparison: ${states.join(' vs ')}`,
+                summary: `Comparing average annual rainfall between ${states.join(' and ')} for ${years.length} years (${years[0]}-${years[years.length-1]})`,
+                type: 'rainfall_comparison',
+                data,
+                sources: [
+                    'India Meteorological Department (IMD) - Rainfall Data',
+                    'data.gov.in/catalog/rainfall-india'
+                ]
+            };
+        }
+
+        function processTopCrops(state, year) {
+            const cropData = MOCK_CROP_DATA[state][year];
+            const sorted = Object.entries(cropData)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3);
+            
+            return {
+                title: `Top 3 Crops in ${state} (${year})`,
+                summary: `Analysis of highest producing crops by volume in ${state} for year ${year}`,
+                type: 'top_crops',
+                data: sorted.map(([crop, production]) => ({
+                    crop,
+                    production: production.toLocaleString(),
+                    unit: 'Tonnes'
+                })),
+                sources: [
+                    'Ministry of Agriculture & Farmers Welfare - Crop Production Statistics',
+                    'data.gov.in/catalog/district-wise-season-wise-crop-production-statistics'
+                ]
+            };
+        }
+
+        function processProductionTrend(crop, state, years) {
+            const trend = years.map(year => ({
+                year,
+                production: MOCK_CROP_DATA[state][year][crop],
+                rainfall: MOCK_RAINFALL_DATA[state][year]
+            }));
+            
+            const firstYear = trend[0].production;
+            const lastYear = trend[trend.length - 1].production;
+            const change = ((lastYear - firstYear) / firstYear * 100).toFixed(1);
+            
+            return {
+                title: `${crop} Production Trend in ${state}`,
+                summary: `${crop} production has ${change > 0 ? 'increased' : 'decreased'} by ${Math.abs(change)}% from ${years[0]} to ${years[years.length-1]}`,
+                type: 'production_trend',
+                data: trend,
+                correlation: 'Climate data shows variable rainfall patterns affecting crop yields',
+                sources: [
+                    'Ministry of Agriculture - District-wise Crop Production Data',
+                    'IMD - Historical Rainfall Data',
+                    'data.gov.in multiple datasets'
+                ]
+            };
+        }
+
+        function displayResults(result) {
+            const container = document.getElementById('resultsContainer');
+            
+            let html = `
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h2 class="text-xl font-bold text-gray-900 mb-2">${result.title}</h2>
+                        <p class="text-gray-600">${result.summary}</p>
+                    </div>
+                    <svg class="w-6 h-6 text-green-500 flex-shrink-0 ml-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+            `;
+
+            if (result.data) {
+                html += '<div class="mt-6">';
+                
+                if (result.type === 'rainfall_comparison') {
+                    html += '<div class="space-y-4">';
+                    result.data.forEach(item => {
+                        html += `
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="font-semibold text-lg">${item.state}</h3>
+                                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                                    </svg>
+                                </div>
+                                <div class="grid grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <p class="text-gray-600">2020</p>
+                                        <p class="font-semibold">${item.rainfall[0]} mm</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600">2021</p>
+                                        <p class="font-semibold">${item.rainfall[1]} mm</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600">2022</p>
+                                        <p class="font-semibold">${item.rainfall[2]} mm</p>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-t border-gray-200">
+                                    <p class="text-sm">
+                                        <span class="text-gray-600">Average: </span>
+                                        <span class="font-bold text-blue-600">${item.avg} mm</span>
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else if (result.type === 'top_crops') {
+                    html += '<div class="space-y-3">';
+                    result.data.forEach((item, i) => {
+                        html += `
+                            <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
+                                        ${i + 1}
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold">${item.crop}</p>
+                                        <p class="text-sm text-gray-600">${item.production} ${item.unit}</p>
+                                    </div>
+                                </div>
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                </svg>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else if (result.type === 'production_trend') {
+                    html += '<div class="space-y-3">';
+                    result.data.forEach(item => {
+                        html += `
+                            <div class="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
+                                <div class="w-16 text-center">
+                                    <p class="font-bold text-lg">${item.year}</p>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-sm text-gray-600">Production</span>
+                                        <span class="font-semibold">${item.production.toLocaleString()} T</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600">Rainfall</span>
+                                        <span class="font-semibold">${item.rainfall} mm</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    if (result.correlation) {
+                        html += `
+                            <div class="mt-4 p-4 bg-yellow-50 rounded-lg flex items-start gap-3">
+                                <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                <p class="text-sm text-gray-700">${result.correlation}</p>
+                            </div>
+                        `;
+                    }
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+            }
+
+            // Add sources
+            if (result.sources) {
+                html += `
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700 mb-2">Data Sources:</p>
+                                <ul class="text-xs text-gray-600 space-y-1">
+                `;
+                
+                result.sources.forEach(source => {
+                    html += `<li>• ${source}</li>`;
+                });
+                
+                html += `
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            showTab('chat');
+        });
+    </script>
+</body>
+</html>
